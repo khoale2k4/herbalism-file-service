@@ -3,12 +3,14 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Response } from '../response/response.entity';
 import { OrderService } from './services/order.service';
 import { CreateOrderDto } from './dtos/create-order.dto';
+import { FeeService } from './services/fee.service';
 
 @Controller('order')
 export class OrderController {
     constructor(
         private readonly response: Response,
         private readonly orderService: OrderService,
+        private readonly feeService: FeeService
 
     ) { }
 
@@ -49,4 +51,23 @@ export class OrderController {
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(this.response);
         }
     }
+
+    @Get('fee')
+    async getFee(@Res() res) {
+        try {
+            const order = await this.feeService.calculateFee(0);
+            if (!order) {
+                this.response.initResponse(false, "Tính phí không thành công", order);
+                return res.status(HttpStatus.NOT_FOUND).json(this.response);
+            } else {
+                this.response.initResponse(true, "Tính phí thành công", order);
+                return res.status(HttpStatus.OK).json(this.response);
+            }
+        } catch (error) {
+            console.log(error);
+            this.response.initResponse(false, "Đã xảy ra lỗi. Vui lòng thử lại", null);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(this.response);
+        }
+    }
+
 }
