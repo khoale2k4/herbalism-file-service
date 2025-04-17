@@ -1,9 +1,11 @@
 import { IsOptional } from "class-validator";
 
 export class CreateOrderDto {
-    customerId: string;
+    @IsOptional()
     items: OrderItemDto[];
+    @IsOptional()
     destination: string;
+    @IsOptional()
     inCart: boolean;
 }
 

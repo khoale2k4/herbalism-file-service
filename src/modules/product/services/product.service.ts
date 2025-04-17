@@ -294,9 +294,27 @@ export class ProductService {
         const sizeStocks = await this.sizeStockModel.findAll({
             where: { productId }
         });
-        if (!size) return sizeStocks;
 
-        return sizeStocks.find(s => s.size === size) || null;
+        const plainSizeStocks = sizeStocks.map(stock =>
+            stock.get?.({ plain: true }) || stock
+        );
+
+        if (!size) return plainSizeStocks;
+
+        const normalizedTargetSize = size.trim().toLowerCase();
+        const foundSize = plainSizeStocks.find(s =>
+            s.size.trim().toLowerCase() === normalizedTargetSize
+        );
+
+        if (!foundSize) {
+            const availableSizes = plainSizeStocks.map(s => s.size);
+            throw new Error(
+                `Product Size ${productId}, ${size} not found. ` +
+                `Available sizes: ${availableSizes.join(', ')}`
+            );
+        }
+
+        return foundSize;
     }
 
     async getProductTypes() {

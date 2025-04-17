@@ -32,7 +32,7 @@ export class OrderService {
     ) {
     }
 
-    async createOrder(dto: CreateOrderDto) {
+    async createOrder(userId: string, dto: CreateOrderDto) {
         return await this.sequelize.transaction(async (t) => {
             const { itemPrices, products } = await this.validateItemsAndCalculateTotal(dto.items, t);
 
@@ -40,7 +40,7 @@ export class OrderService {
             const totalPrice = subtotal + this.feeService.calculateFee(subtotal);
 
             const order = await this.orderModel.create({
-                customerId: dto.customerId,
+                customerId: userId,
                 address: dto.destination,
                 status: 'pending',
                 totalPrice: totalPrice,
@@ -69,7 +69,7 @@ export class OrderService {
                 if (dto.inCart) {
                     await this.cartItemModel.destroy({
                         where: {
-                            cartId: dto.customerId,
+                            cartId: userId,
                             productId: item.productId,
                             size: item.size,
                         },
@@ -127,10 +127,9 @@ export class OrderService {
         console.log(items);
         const itemPrices = await Promise.all(
             items.map(async (item) => {
-                const productId = item.get('productId');
+                const productId = item.get('product').get('id');
                 const size = item.get('size');
                 const num = item.get('num');
-                console.log('productId', productId);
                 const product = await this.productModel.findOne({
                     where: { id: productId },
                     include: [{
@@ -144,9 +143,11 @@ export class OrderService {
                     throw new Error(`Product ${productId} not found`);
                 }
 
-                const productSize = await this.productService.getSizeStockOfProduct(productId, size) as SizeStock;
+                const productSizeStock = await this.productService.getSizeStockOfProduct(productId, size);
+                const productSize = productSizeStock as SizeStock;
+                console.log('productSize', productSize)
                 if (!productSize) {
-                    throw new Error(`Product ${productId} not found`);
+                    throw new Error(`Product Size ${productId}, ${size} not found`);
                 }
                 if (productSize.stock < num) {
                     throw new Error(`Not enough stock for product ${productId}`);
@@ -177,7 +178,7 @@ export class OrderService {
             });
             await this.sizeStockModel.decrement('stock', {
                 by: num,
-                where: { productId: product.get('id'), size: item.size }
+                where: { productId: product.get('id'), size: item.get('size') }
             });
         });
         await this.cartService.clearCart(dto.customerId);
