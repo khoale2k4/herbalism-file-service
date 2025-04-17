@@ -16,6 +16,9 @@ export class Comment extends Model {
     @Column({ type: DataType.TEXT, allowNull: false })
     content: string;
 
+    @Column({ type: DataType.INTEGER, allowNull: false })
+    rate: number;
+
     @ForeignKey(() => Product)
     @Column({ type: DataType.UUID, allowNull: false })
     productId: UUID;

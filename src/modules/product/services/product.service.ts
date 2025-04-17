@@ -14,6 +14,8 @@ import { CreateSizeStockDto } from '../dtos/create-sizestock.dto';
 import { Includeable, ModelStatic } from 'sequelize';
 import { ProductTabs } from 'src/shared/database/models/product-tabs.model';
 import { ProductImages } from 'src/shared/database/models/product-image.dto';
+import { Customer } from 'src/shared/database/models/customer.model';
+import { Comment } from 'src/shared/database/models/comment.model';
 
 @Injectable()
 export class ProductService {
@@ -119,6 +121,20 @@ export class ProductService {
                         attributes: ['size', 'stock', 'price'],
                         as: 'size_stock',
                         required: false
+                    },
+                    {
+                        model: Comment,
+                        attributes: ['id', 'content', 'rate', 'createdAt'],
+                        as: 'comments',
+                        required: false,
+                        include: [
+                            {
+                                model: Customer,
+                                attributes: ['id', 'name'],
+                                as: 'customer',
+                                required: false,
+                            }
+                        ]
                     }
                 ]
             }

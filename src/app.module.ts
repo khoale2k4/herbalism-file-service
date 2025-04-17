@@ -15,6 +15,7 @@ import { ArticleModule } from './modules/articles/articles.module';
 import { ProductModule } from './modules/product/product.module';
 import { OrderModule } from './modules/order/order.module';
 import { CartModule } from './modules/cart/cart.module';
+import { CommentModule } from './modules/comment/comment.module';
 
 @Module({
   imports: [
@@ -24,7 +25,7 @@ import { CartModule } from './modules/cart/cart.module';
     }),
     ConfigModule.forRoot({
       isGlobal: true,
-    }), CustomerModule, DatabaseModule, ResponseModule, AuthModule, ArticleModule, ProductModule, CartModule, OrderModule,],
+    }), CustomerModule, DatabaseModule, ResponseModule, AuthModule, ArticleModule, ProductModule, CartModule, OrderModule, CommentModule],
   controllers: [AppController],
   providers: [AppService],
 })
