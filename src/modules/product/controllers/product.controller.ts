@@ -49,6 +49,19 @@ export class ProductController {
         }
     }
 
+    @Get('suggest')
+    async getSuggestProducts(@Res() res) {
+        try {
+            const products = await this.productService.getSuggestedProducts();
+            this.response.initResponse(true, 'Lấy danh sách sản phẩm gợi ý thành công', products);
+            return res.status(HttpStatus.OK).json(this.response);
+        } catch (error) {
+            console.log(error);
+            this.response.initResponse(false, 'Đã xảy ra lỗi khi lấy danh sách sản phẩm gợi ý', null);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(this.response);
+        }
+    }
+
     @Post()
     @UseGuards(JwtAuthGuard)
     async createProduct(

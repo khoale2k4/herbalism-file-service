@@ -20,7 +20,7 @@ import { AdminModule } from 'src/modules/admin/admin.module';
             inject: [ConfigService],
             useFactory: async (configService: ConfigService) => ({
                 secret: configService.get<string>('JWT_SECRET'),
-                signOptions: { expiresIn: '24h' },
+                signOptions: { expiresIn: '365 days' },
             }),
         }),
         forwardRef(() => CustomerModule),

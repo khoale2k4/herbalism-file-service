@@ -17,7 +17,28 @@ export class Address extends Model {
     customerId: UUID;
 
     @Column({ type: DataType.STRING(100), allowNull: false })
+    firstName: string;
+
+    @Column({ type: DataType.STRING(100), allowNull: false })
+    lastName: string;
+
+    @Column({ type: DataType.TEXT, allowNull: false })
     address: string;
+
+    @Column({ type: DataType.STRING(100), allowNull: false })
+    country: string;
+
+    @Column({ type: DataType.STRING(100), allowNull: true })
+    apartment: string;
+
+    @Column({ type: DataType.STRING(100), allowNull: false })
+    city: string;
+
+    @Column({ type: DataType.STRING(100), allowNull: false })
+    province: string;
+
+    @Column({ type: DataType.STRING(100), allowNull: false })
+    zipCode: string;
 
     @BelongsTo(() => Customer)
     customer: Customer;

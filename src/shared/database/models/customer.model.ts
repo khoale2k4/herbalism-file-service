@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, HasMany, Default, BelongsTo, ForeignKey } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, HasMany, Default, BelongsTo, ForeignKey, Unique } from 'sequelize-typescript';
 import { Order } from './order.model'
 import { Comment } from './comment.model'
 import { UUID } from 'crypto';
@@ -18,6 +18,7 @@ export class Customer extends Model {
     @Column({ type: DataType.STRING(100), allowNull: false })
     name: string;
 
+    @Unique
     @Column({ type: DataType.STRING(255), unique: true, allowNull: false })
     mail: string;
 

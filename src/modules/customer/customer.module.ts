@@ -8,10 +8,11 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ResponseModule } from '../response/response.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { AdminModule } from '../admin/admin.module';
+import { Address } from 'src/shared/database/models/address.model';
 
 @Module({
     imports: [
-        SequelizeModule.forFeature([Customer]), 
+        SequelizeModule.forFeature([Customer, Address]), 
         ResponseModule,
         AuthModule,
         AdminModule

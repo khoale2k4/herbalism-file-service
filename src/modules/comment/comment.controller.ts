@@ -30,11 +30,29 @@ export class CommentController {
         }
     }
 
+    @Post('createByGuest')
+    async createCommentByGuest(@Body() dto: CreateCommentDto, @Res() res) {
+        try {
+            const comment = await this.commentService.createComment(dto);
+            if (!comment) {
+                this.response.initResponse(false, "Tạo bình luận không thành công", comment);
+                return res.status(HttpStatus.NOT_FOUND).json(this.response);
+            } else {
+                this.response.initResponse(true, "Tạo bình luận thành công", comment);
+                return res.status(HttpStatus.OK).json(this.response);
+            }
+        } catch (error) {
+            console.error(error);
+            this.response.initResponse(false, "Đã xảy ra lỗi. Vui lòng thử lại", null);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(this.response);
+        }
+    }
+
     @Post('create')
     @UseGuards(JwtAuthGuard)
     async createComment(@Body() dto: CreateCommentDto, @Req() req, @Res() res) {
         try {
-            const comment = await this.commentService.createComment(req.user.id, dto);
+            const comment = await this.commentService.createComment(dto, req.user.id);
             if (!comment) {
                 this.response.initResponse(false, "Tạo bình luận không thành công", comment);
                 return res.status(HttpStatus.NOT_FOUND).json(this.response);

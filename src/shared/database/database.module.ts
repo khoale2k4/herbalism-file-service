@@ -17,37 +17,32 @@ import { ProductTabs } from './models/product-tabs.model';
 import { ProductImages } from './models/product-image.dto';
 import { ArticleCategory } from './models/article-category.model';
 import { Cart } from './models/cart.model';
+import { Invoice } from './models/invoice.model';
+import { Voucher } from './models/voucher.model';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
     imports: [
-        SequelizeModule.forRoot({
-            dialect: 'mariadb',
-            host: 'localhost',
-            port: 3306,
-            username: 'root',
-            password: '',
-            database: 'herbalism_db',
-            autoLoadModels: true,
-            synchronize: true, // Chỉ dùng cho dev, tắt khi production
-            models: [
-                Customer,
-                Product,
-                Order,
-                Comment,
-                Admin,
-                Article,
-                CartItem,
-                OrderDetail,
-                Address,
-                SizeStock,
-                ProductForms,
-                ProductTypes,
-                WellnessNeeds,
-                ProductTabs,
-                ProductImages,
-                ArticleCategory,
-                Cart
-            ],
+        ConfigModule.forRoot({ isGlobal: true }),
+        SequelizeModule.forRootAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (config: ConfigService) => ({
+                dialect: 'mysql',
+                host: config.get<string>('DB_HOST'),
+                port: parseInt(config.get<string>('DB_PORT', '3306')),
+                username: config.get<string>('DB_USER'),
+                password: config.get<string>('DB_PASS'),
+                database: config.get<string>('DB_NAME'),
+                autoLoadModels: true,
+                synchronize: true, // Chỉ bật khi dev
+                models: [
+                    Customer, Product, Order, Comment, Admin, Article,
+                    CartItem, OrderDetail, Address, SizeStock, ProductForms,
+                    ProductTypes, WellnessNeeds, ProductTabs, ProductImages,
+                    ArticleCategory, Cart, Invoice, Voucher
+                ],
+            }),
         }),
     ],
 })

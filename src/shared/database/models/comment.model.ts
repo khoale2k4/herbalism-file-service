@@ -16,7 +16,7 @@ export class Comment extends Model {
     @Column({ type: DataType.TEXT, allowNull: false })
     content: string;
 
-    @Column({ type: DataType.INTEGER, allowNull: false })
+    @Column({ type: DataType.INTEGER, allowNull: true })
     rate: number;
 
     @ForeignKey(() => Product)
@@ -24,12 +24,12 @@ export class Comment extends Model {
     productId: UUID;
 
     @ForeignKey(() => Customer)
-    @Column({ type: DataType.UUID, allowNull: false })
+    @Column({ type: DataType.UUID, allowNull: true })
     customerId: UUID;
 
     @BelongsTo(() => Product)
     product: Product;
 
     @BelongsTo(() => Customer)
-    customer: Customer;
+    customer?: Customer;
 }

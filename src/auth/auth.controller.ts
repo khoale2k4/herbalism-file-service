@@ -15,10 +15,10 @@ export class AuthController {
         try {
             const login = await this.authService.login(loginDto.mail, loginDto.password);
             if(!login) {
-                this.response.initResponse(false, "Tài khoản không tồn tại", null);
+                this.response.initResponse(false, "Sai tài khoản hoặc mật khẩu", null);
                 return res.status(HttpStatus.UNAUTHORIZED).json(this.response);
             } else if (login === 'No account') {
-                this.response.initResponse(false, "Sai tài khoản hoặc mật khẩu", null);
+                this.response.initResponse(false, "Không tồn tại tài khoản này", null);
                 return res.status(HttpStatus.UNAUTHORIZED).json(this.response);
             } else {
                 this.response.initResponse(true, "Đăng nhập thành công", login);

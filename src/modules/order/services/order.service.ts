@@ -16,6 +16,7 @@ import { FeeService } from './fee.service';
 import { CreateOrderFromCartDto } from '../dtos/create-order-from-cart.dto';
 import { ProductService } from 'src/modules/product/services/product.service';
 import { Sequelize } from 'sequelize-typescript';
+import { ProductImages } from 'src/shared/database/models/product-image.dto';
 
 @Injectable()
 export class OrderService {
@@ -32,6 +33,27 @@ export class OrderService {
     ) {
     }
 
+    async getAll() {
+        return await this.orderModel.findAll({
+            include: [
+                {
+                    model: Customer,
+                    attributes: ['id', 'name', 'mail'],
+                },
+                {
+                    model: OrderDetail,
+                    include: [
+                        {
+                            model: Product,
+                            attributes: ['id', 'name', 'price'],
+                        },
+                    ],
+                },
+            ],
+        });
+    }
+
+    // need to add trackingNumber
     async createOrder(userId: string, dto: CreateOrderDto) {
         return await this.sequelize.transaction(async (t) => {
             const { itemPrices, products } = await this.validateItemsAndCalculateTotal(dto.items, t);
@@ -48,7 +70,7 @@ export class OrderService {
 
             await Promise.all(dto.items.map(async (item) => {
                 const product = products.find(p => p.id === item.productId);
-                if(!product) {
+                if (!product) {
                     throw new Error(`Product ${item.productId} not found`);
                 }
 
@@ -161,9 +183,10 @@ export class OrderService {
         console.log('totalPrice', totalPrice);
         const order = await this.orderModel.create({
             customerId: dto.customerId,
-            address: dto.destination,
+            addressId: dto.addressId,
             totalPrice: totalPrice + this.feeService.calculateFee(0),
             status: 'pending',
+            trackingNumber: this.getTrackingNumber()
         });
         items.map(async item => {
             const product = item.get('product');
@@ -183,6 +206,45 @@ export class OrderService {
         });
         await this.cartService.clearCart(dto.customerId);
         return order;
+    }
+
+    async getPendingOrders(customerId: string) {
+        return await this.orderModel.findAll({
+            where: {
+                status: 'pending',
+                customerId
+            },
+            order: [['createdAt', 'ASC']],
+            include: [
+                {
+                    model: Customer,
+                    attributes: ['id', 'name', 'mail'],
+                },
+                {
+                    model: OrderDetail,
+                    include: [
+                        {
+                            model: Product,
+                            attributes: ['id', 'name', 'price'],
+                            include: [{
+                                model: ProductImages,
+                                attributes: ['url'],
+                            }]
+                        },
+                    ],
+                },
+            ],
+        });
+    }
+
+    async getTrackingNumber() {
+        const orders = await this.orderModel.count();
+        const orderNumber = orders.toString().padStart(7, '0'); 
+        const time = new Date();
+        const formattedDate = time.toISOString().slice(0, 10).replace(/-/g, '');
+        const trackingNumber = `ORDER_${orderNumber}_${formattedDate}`;
+
+        return trackingNumber;
     }
 
 }

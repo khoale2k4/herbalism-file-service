@@ -163,7 +163,7 @@ export class ProductService {
 
     async findAllProducts() {
         const products = await Product.findAll({
-            attributes: ['id', 'name', 'rate'],
+            attributes: ['id', 'name', 'rate', 'createdAt'],
             include: [
                 {
                     model: ProductTypes,
@@ -213,7 +213,8 @@ export class ProductService {
                 size_stock: plainProduct.size_stock,
                 totalStock: totalStock,
                 price: minPrice,
-                images: plainProduct.images
+                images: plainProduct.images,
+                createdAt: plainProduct.createdAt,
             };
         });
     }
@@ -261,6 +262,46 @@ export class ProductService {
 
         return this.productModel.findAll({
             include: includeOptions,
+        });
+    }
+
+    async getSuggestedProducts(){
+        const products = await this.productModel.findAll({
+            attributes: ['id', 'name', 'rate', 'createdAt'],
+            include: [
+                {
+                    model: ProductImages,
+                    as: 'images',
+                    attributes: ['url'],
+                    order: [['createdAt', 'ASC']],
+                    required: false,
+                },  {
+                    model: SizeStock,
+                    as: 'size_stock',
+                    attributes: ['size', 'price', 'stock'],
+                    required: false
+                }, 
+            ],
+            order: [Sequelize.literal('RAND()')], 
+            limit: 3,                            
+        });
+
+        return products.map((product) => {
+            const plainProduct = product.get({ plain: true });
+
+            const prices = plainProduct.size_stock?.map((s) => s.price) || [];
+            const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+            const totalStock = (plainProduct.size_stock || []).reduce((acc, s) => acc + Number(s.stock), 0);
+
+            return {
+                id: plainProduct.id,
+                name: plainProduct.name,
+                rate: plainProduct.rate,
+                totalStock: totalStock,
+                price: minPrice,
+                images: plainProduct.images,
+                createdAt: plainProduct.createdAt,
+            };
         });
     }
 
@@ -353,4 +394,6 @@ export class ProductService {
             order: [['name', 'ASC']]
         });
     }
+
+
 }

@@ -16,6 +16,7 @@ import { ProductModule } from './modules/product/product.module';
 import { OrderModule } from './modules/order/order.module';
 import { CartModule } from './modules/cart/cart.module';
 import { CommentModule } from './modules/comment/comment.module';
+import { VoucherModule } from './modules/voucher/voucher.module';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { CommentModule } from './modules/comment/comment.module';
     }),
     ConfigModule.forRoot({
       isGlobal: true,
-    }), CustomerModule, DatabaseModule, ResponseModule, AuthModule, ArticleModule, ProductModule, CartModule, OrderModule, CommentModule],
+    }), CustomerModule, DatabaseModule, ResponseModule, AuthModule, ArticleModule, ProductModule, CartModule, OrderModule, CommentModule, VoucherModule],
   controllers: [AppController],
   providers: [AppService],
 })
