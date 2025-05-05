@@ -15,6 +15,8 @@ import { Product } from 'src/shared/database/models/product.model';
 import { OrderDetail } from 'src/shared/database/models/order-detail.model';
 import { FeeService } from './services/fee.service';
 import { SizeStock } from 'src/shared/database/models/size_stock.model';
+import { VoucherService } from '../voucher/voucher.service';
+import { VoucherModule } from '../voucher/voucher.module';
 
 @Module({
     imports: [
@@ -23,8 +25,9 @@ import { SizeStock } from 'src/shared/database/models/size_stock.model';
         AuthModule,
         ProductModule,
         CartModule,
+        VoucherModule
     ],
-    providers: [OrderService, OrderRepository, FeeService,],
+    providers: [OrderService, OrderRepository, FeeService],
     controllers: [OrderController],
     exports: [OrderService, OrderRepository, FeeService],
 })

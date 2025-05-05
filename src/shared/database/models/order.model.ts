@@ -33,6 +33,12 @@ export class Order extends Model {
     })
     status: string;
 
+    @Column({
+        type: DataType.ENUM('cod', 'bank'),
+        defaultValue: 'cod'
+    })
+    paymentMethod: string;
+
     @BelongsTo(() => Customer)
     customer: Customer;
 

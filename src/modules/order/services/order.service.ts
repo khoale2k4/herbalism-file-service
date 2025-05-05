@@ -18,6 +18,7 @@ import { ProductService } from 'src/modules/product/services/product.service';
 import { Sequelize } from 'sequelize-typescript';
 import { ProductImages } from 'src/shared/database/models/product-image.dto';
 import { Address } from 'src/shared/database/models/address.model';
+import { VoucherService } from 'src/modules/voucher/voucher.service';
 
 @Injectable()
 export class OrderService {
@@ -30,7 +31,8 @@ export class OrderService {
         @InjectConnection() private readonly sequelize: Sequelize,
         private readonly cartService: CartService,
         private readonly feeService: FeeService,
-        private readonly productService: ProductService
+        private readonly productService: ProductService,
+        private readonly voucherService: VoucherService
     ) {
     }
 
@@ -207,13 +209,23 @@ export class OrderService {
             })
         );
         const totalPrice = itemPrices.reduce((total, price) => total + price, 0);
-        console.log('totalPrice', totalPrice);
+        let finalPrice = totalPrice;
+        if (dto.voucherId !== undefined) {
+            const voucher = await this.voucherService.findById(dto.voucherId);
+            if (voucher) {
+                if (voucher.type === 'amount') {
+                    finalPrice -= voucher.discount;
+                } else if(voucher.type === 'percent') {
+                    finalPrice -= (voucher.discount * finalPrice);
+                }
+                finalPrice = (finalPrice < 0? 0: finalPrice);
+            }
+        }
         const trackingNumber = await this.getTrackingNumber();
-        console.log(trackingNumber);
         const order = await this.orderModel.create({
             customerId: dto.customerId,
             addressId: dto.addressId,
-            totalPrice: totalPrice + this.feeService.calculateFee(0),
+            totalPrice: finalPrice + this.feeService.calculateFee(0),
             status: 'pending',
             trackingNumber: trackingNumber
         });
@@ -268,7 +280,7 @@ export class OrderService {
 
     async getTrackingNumber() {
         const orders = await this.orderModel.count();
-        const orderNumber = orders.toString().padStart(7, '0'); 
+        const orderNumber = orders.toString().padStart(7, '0');
         const time = new Date();
         const formattedDate = time.toISOString().slice(0, 10).replace(/-/g, '');
         const trackingNumber = `ORDER_${orderNumber}_${formattedDate}`;

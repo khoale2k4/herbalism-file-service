@@ -73,9 +73,14 @@ export class OrderController {
 
     @Post('createFromCart')
     @UseGuards(JwtAuthGuard)
-    async createOrderFromCart(@Body() dto: { addressId: string }, @Req() req, @Res() res) {
+    async createOrderFromCart(@Body() dto: { addressId: string, voucherId?: string }, @Req() req, @Res() res) {
         try {
-            const order = await this.orderService.createOrderFromCart({ customerId: req.user.id, addressId: dto.addressId });
+            const order = await this.orderService.createOrderFromCart(
+                { 
+                    customerId: req.user.id, 
+                    addressId: dto.addressId,
+                    voucherId: dto.voucherId
+                });
             if (!order) {
                 this.response.initResponse(false, "Tạo đơn hàng không thành công", order);
                 return res.status(HttpStatus.NOT_FOUND).json(this.response);
