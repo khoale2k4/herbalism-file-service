@@ -208,12 +208,14 @@ export class OrderService {
         );
         const totalPrice = itemPrices.reduce((total, price) => total + price, 0);
         console.log('totalPrice', totalPrice);
+        const trackingNumber = await this.getTrackingNumber();
+        console.log(trackingNumber);
         const order = await this.orderModel.create({
             customerId: dto.customerId,
             addressId: dto.addressId,
             totalPrice: totalPrice + this.feeService.calculateFee(0),
             status: 'pending',
-            trackingNumber: this.getTrackingNumber()
+            trackingNumber: trackingNumber
         });
         items.map(async item => {
             const product = item.get('product');
@@ -273,5 +275,4 @@ export class OrderService {
 
         return trackingNumber;
     }
-
 }
