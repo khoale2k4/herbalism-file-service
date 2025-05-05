@@ -33,6 +33,29 @@ export class OrderService {
     ) {
     }
 
+    async getMyOrders(userId: string) {
+        return await this.orderModel.findAll({
+            where: {
+                customerId: userId
+            },
+            include: [
+                {
+                    model: Customer,
+                    attributes: ['id', 'name', 'mail'],
+                },
+                {
+                    model: OrderDetail,
+                    include: [
+                        {
+                            model: Product,
+                            attributes: ['id', 'name', 'price'],
+                        },
+                    ],
+                },
+            ],
+        });
+    }
+
     async getAll() {
         return await this.orderModel.findAll({
             include: [

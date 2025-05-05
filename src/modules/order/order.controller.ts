@@ -14,6 +14,25 @@ export class OrderController {
 
     ) { }
 
+    @Get('getmy')
+    @UseGuards(JwtAuthGuard)
+    async getMy(@Req() req, @Res() res) {
+        try {
+            const orders = await this.orderService.getMyOrders(req.user.id);
+            if (!orders) {
+                this.response.initResponse(false, "Không có đơn hàng nào", orders);
+                return res.status(HttpStatus.NOT_FOUND).json(this.response);
+            } else {
+                this.response.initResponse(true, "Lấy danh sách đơn hàng thành công", orders);
+                return res.status(HttpStatus.OK).json(this.response);
+            }
+        } catch (error) {
+            console.log(error);
+            this.response.initResponse(false, "Đã xảy ra lỗi. Vui lòng thử lại", null);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(this.response);
+        }
+    }
+
     @Get('getAll')
     @UseGuards(JwtAuthGuard)
     async getAll(@Req() req, @Res() res) {
