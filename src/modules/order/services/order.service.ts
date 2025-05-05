@@ -17,6 +17,7 @@ import { CreateOrderFromCartDto } from '../dtos/create-order-from-cart.dto';
 import { ProductService } from 'src/modules/product/services/product.service';
 import { Sequelize } from 'sequelize-typescript';
 import { ProductImages } from 'src/shared/database/models/product-image.dto';
+import { Address } from 'src/shared/database/models/address.model';
 
 @Injectable()
 export class OrderService {
@@ -52,6 +53,9 @@ export class OrderService {
                         },
                     ],
                 },
+                {
+                    model: Address,
+                }
             ],
         });
     }
