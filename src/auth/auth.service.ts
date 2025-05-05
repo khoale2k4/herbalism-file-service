@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { AdminService } from 'src/modules/admin/admin.service';
 import { CustomerService } from 'src/modules/customer/customer.service';
 import * as bcrypt from 'bcrypt';
+import { CreateCustomerDto } from 'src/modules/customer/dtos/create-customer.dto';
 
 @Injectable()
 export class AuthService {
@@ -30,8 +31,8 @@ export class AuthService {
         }
         console.log(user);
         if (!user) return "No account";
-        // if (await this.comparePassword(user.password, password)) {
-        if (user.password === password) {
+        if (await this.comparePassword(password, user.password)) {
+            // if (user.password === password) {
             const { password, ...userWithoutPassword } = user;
             return {
                 info: userWithoutPassword,
@@ -42,10 +43,37 @@ export class AuthService {
         }
     }
 
+    async register(dto: CreateCustomerDto) {
+        let user = await this.customerService.findByEmail(dto.mail);
+        if (!user) {
+            user = await this.adminService.findByEmail(dto.mail);
+        }
+        console.log(user);
+        if (user) {
+            return null;
+        } else {
+            const customer = await this.customerService.create({
+                mail: dto.mail,
+                password: dto.password,
+                name: dto.name
+            });
+            const { password, ...dataWithoutPassword } = customer;
+            return dataWithoutPassword;
+        }
+    }
+
     async comparePassword(
         plainTextPassword: string,
         hashedPassword: string,
     ) {
-        return await bcrypt.compare(plainTextPassword, hashedPassword);
+        console.log('Comparing:', {
+            plain: plainTextPassword,
+            type: typeof plainTextPassword,
+            length: plainTextPassword.length,
+            hash: hashedPassword
+        });
+        const isMatch = await bcrypt.compare(plainTextPassword, hashedPassword);
+
+        return isMatch;
     }
 }

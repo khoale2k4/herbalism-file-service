@@ -15,7 +15,7 @@ export class CustomerService {
         @InjectModel(Address) private addressModel: typeof Address,
         private adminService: AdminService
     ) { }
-    
+
     async getInfo(cusId: number) {
         return await this.customerModel.findByPk(cusId);
     }
@@ -34,11 +34,18 @@ export class CustomerService {
     }
 
     async hashPassword(password: string) {
-        return await bcrypt.hash(password, process.env.SALT_ROUNDS?? 10);
+        const saltRounds = parseInt(process.env.SALT_ROUNDS ?? "10", 10);
+        const hash = await bcrypt.hash(password, saltRounds);
+        console.log("Hashing password:", password, "->", hash);
+        return hash;
     }
 
     async create(customerData: CreateCustomerDto) {
         const { password, ...dataWithouPassword } = customerData;
+        console.log({
+            ...dataWithouPassword,
+            password: await this.hashPassword(password),
+        });
         return await this.customerModel.create({
             ...dataWithouPassword,
             password: await this.hashPassword(password),
@@ -47,7 +54,7 @@ export class CustomerService {
 
     async findAll(adminId: string) {
         const isAdmin = await this.adminService.findByPk(adminId);
-        if(!isAdmin) return null;
+        if (!isAdmin) return null;
         return await this.customerModel.findAll();
     }
 
@@ -58,7 +65,7 @@ export class CustomerService {
         })
     }
 
-    async getAddress(customerId: string){
+    async getAddress(customerId: string) {
         return await this.addressModel.findAll({
             where: {
                 customerId
