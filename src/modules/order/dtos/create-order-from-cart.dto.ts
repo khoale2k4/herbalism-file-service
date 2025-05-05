@@ -4,4 +4,5 @@ export class CreateOrderFromCartDto {
     customerId: string;
     addressId: string;
     voucherId?: string;
+    paymentMethod: 'cod' | 'bank';
 }

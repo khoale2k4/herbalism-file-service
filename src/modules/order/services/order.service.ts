@@ -210,9 +210,12 @@ export class OrderService {
         );
         const totalPrice = itemPrices.reduce((total, price) => total + price, 0);
         let finalPrice = totalPrice;
+        console.log(finalPrice);
         if (dto.voucherId !== undefined) {
             const voucher = await this.voucherService.findById(dto.voucherId);
+            console.log(voucher)
             if (voucher) {
+                console.log(voucher.discount)
                 if (voucher.type === 'amount') {
                     finalPrice -= voucher.discount;
                 } else if(voucher.type === 'percent') {
@@ -220,6 +223,7 @@ export class OrderService {
                 }
                 finalPrice = (finalPrice < 0? 0: finalPrice);
             }
+            console.log(finalPrice);
         }
         const trackingNumber = await this.getTrackingNumber();
         const order = await this.orderModel.create({
@@ -227,7 +231,8 @@ export class OrderService {
             addressId: dto.addressId,
             totalPrice: finalPrice + this.feeService.calculateFee(0),
             status: 'pending',
-            trackingNumber: trackingNumber
+            trackingNumber: trackingNumber,
+            paymentMethod: dto.paymentMethod
         });
         items.map(async item => {
             const product = item.get('product');

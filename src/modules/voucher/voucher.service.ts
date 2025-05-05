@@ -17,6 +17,7 @@ export class VoucherService {
     }
 
     async findById(id: string) {
-        return await this.voucherModel.findByPk(id);
+        const result =  await this.voucherModel.findByPk(id);
+        return result?.dataValues;
     }
 }
