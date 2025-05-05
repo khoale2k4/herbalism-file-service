@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ProductController } from './controllers/product.controller';
 import { JwtModule, JwtService } from '@nestjs/jwt';
@@ -19,7 +19,7 @@ import { ProductImages } from 'src/shared/database/models/product-image.dto';
     imports: [
         SequelizeModule.forFeature([Product, ProductForms, ProductTypes, ProductTabs, WellnessNeeds, SizeStock, ProductImages]), 
         ResponseModule,
-        AuthModule,
+        forwardRef(() => AuthModule),
     ],
     providers: [ProductService, ProductRepository],
     controllers: [ProductController],

@@ -10,9 +10,13 @@ import { AuthController } from './auth.controller';
 import { ResponseModule } from 'src/modules/response/response.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AdminModule } from 'src/modules/admin/admin.module';
+import { CartModule } from 'src/modules/cart/cart.module';
+import { SequelizeModule } from '@nestjs/sequelize';
+import { Cart } from 'src/shared/database/models/cart.model';
 
 @Module({
     imports: [
+        SequelizeModule.forFeature([Cart]),
         PassportModule,
         ConfigModule,
         JwtModule.registerAsync({
@@ -25,7 +29,8 @@ import { AdminModule } from 'src/modules/admin/admin.module';
         }),
         forwardRef(() => CustomerModule),
         AdminModule,
-        ResponseModule
+        ResponseModule,
+        CartModule
     ],
     providers: [JwtStrategy, AuthService], 
     controllers: [AuthController],

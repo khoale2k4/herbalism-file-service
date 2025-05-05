@@ -4,10 +4,13 @@ import { AdminService } from 'src/modules/admin/admin.service';
 import { CustomerService } from 'src/modules/customer/customer.service';
 import * as bcrypt from 'bcrypt';
 import { CreateCustomerDto } from 'src/modules/customer/dtos/create-customer.dto';
+import { InjectModel } from '@nestjs/sequelize';
+import { Cart } from 'src/shared/database/models/cart.model';
 
 @Injectable()
 export class AuthService {
     constructor(
+        @InjectModel(Cart) private readonly cartModel: typeof Cart,
         private readonly jwtService: JwtService,
         private readonly customerService: CustomerService,
         private readonly adminService: AdminService
@@ -57,6 +60,11 @@ export class AuthService {
                 password: dto.password,
                 name: dto.name
             });
+            // có thể lỗi chỗ này nè
+            const cart = await this.cartModel.create({
+                customerId: customer.id
+            })
+            
             const { password, ...dataWithoutPassword } = customer;
             return dataWithoutPassword;
         }

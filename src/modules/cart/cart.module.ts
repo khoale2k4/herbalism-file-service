@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { Customer } from '../../shared/database/models/customer.model';
 import { ResponseModule } from '../response/response.module';
@@ -14,10 +14,10 @@ import { ProductModule } from '../product/product.module';
 
 @Module({
     imports: [
-        SequelizeModule.forFeature([Customer, CartItem, Cart, Product]), 
+        SequelizeModule.forFeature([Customer, CartItem, Cart, Product]),
         ResponseModule,
-        AuthModule,
-        ProductModule
+        forwardRef(() => AuthModule), 
+        ProductModule,
     ],
     providers: [CartService, CartRepository, CartItemRepository],
     controllers: [CartController],

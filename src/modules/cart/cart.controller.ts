@@ -34,10 +34,11 @@ export class CartController {
     @UseGuards(JwtAuthGuard)
     async addToCart(@Body() dto: { productId: string, size: string, num: number }, @Req() req, @Res() res) {
         try {
+            console.log('in add');
             const item = await this.cartService.addToCart(req.user.id, dto.productId, dto.size, dto.num);
             if (!item) {
                 this.response.initResponse(false, "Thêm item không thành công", item);
-                return res.status(HttpStatus.NOT_FOUND).json(this.response);
+                return res.status(HttpStatus.BAD_REQUEST).json(this.response);
             } else {
                 this.response.initResponse(true, "Thêm item thành công", item);
                 return res.status(HttpStatus.OK).json(this.response);
