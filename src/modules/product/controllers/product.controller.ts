@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Req, Res, HttpStatus, Param, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req, Res, HttpStatus, Param, Query, UseInterceptors, UploadedFile, Put } from '@nestjs/common';
 import { ProductService } from '../services/product.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Response } from '../../response/response.entity';
@@ -174,6 +174,25 @@ export class ProductController {
             }
 
             this.response.initResponse(true, 'Lấy thông tin sản phẩm thành công', product);
+            return res.status(HttpStatus.OK).json(this.response);
+        } catch (error) {
+            console.log(error);
+            this.response.initResponse(false, 'Đã xảy ra lỗi khi lấy thông tin sản phẩm', null);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(this.response);
+        }
+    }
+
+    @Put(':id')
+    async update(@Param('id') id: string, @Body() dto: CreateProductDto, @Req() req, @Res() res) {
+        try {
+            const product = await this.productService.updateProducts(id, dto);
+
+            if (!product) {
+                this.response.initResponse(false, 'Cập nhật sản phẩm thất bại', null);
+                return res.status(HttpStatus.NOT_FOUND).json(this.response);
+            }
+
+            this.response.initResponse(true, 'Cập nhật sản phẩm thành công', product);
             return res.status(HttpStatus.OK).json(this.response);
         } catch (error) {
             console.log(error);

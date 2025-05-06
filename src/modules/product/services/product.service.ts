@@ -11,7 +11,7 @@ import { ProductForms } from 'src/shared/database/models/product-form.model';
 import { WellnessNeeds } from 'src/shared/database/models/wellness-needs.model';
 import { AddStockDto } from '../dtos/add-stock.dto';
 import { CreateSizeStockDto } from '../dtos/create-sizestock.dto';
-import { Includeable, ModelStatic } from 'sequelize';
+import { Includeable, ModelStatic, where } from 'sequelize';
 import { ProductTabs } from 'src/shared/database/models/product-tabs.model';
 import { ProductImages } from 'src/shared/database/models/product-image.dto';
 import { Customer } from 'src/shared/database/models/customer.model';
@@ -220,6 +220,78 @@ export class ProductService {
         });
     }
 
+    async updateProducts(id: string, data: CreateProductDto) {
+        await this.imageModel.destroy({
+            where: {
+                productId: id
+            }
+        })
+        await this.tabModel.destroy({
+            where: {
+                productId: id
+            }
+        })
+        await this.sizeStockModel.destroy({
+            where: {
+                productId: id
+            }
+        })
+
+        data.tabs.map(async (tab) => {
+            await this.tabModel.create({
+                productId: id,
+                name: tab.name,
+                description: tab.description
+            });
+        })
+
+        data.images.map(async (image) => {
+            await this.imageModel.create({
+                productId: id,
+                url: image
+            });
+        })
+
+        data.size_stock.map(async (sizeStock) => {
+            await this.sizeStockModel.create({
+                productId: id,
+                size: sizeStock.size,
+                stock: sizeStock.stock,
+                price: sizeStock.price
+            });
+        })
+
+        let type = await this.findProductType(data.product_type);
+        if (!type) {
+            type = await this.createProductType(data.product_type);
+        }
+        let form = await this.findProductForm(data.product_form);
+        if (!form) {
+            form = await this.createProductForm(data.product_form);
+        }
+
+        let need = await this.findWellnessNeed(data.wellness_need);
+        if (!need) {
+            need = await this.createWellnessNeed(data.wellness_need);
+        }
+
+        const [updatedCount] = await this.productModel.update({
+            ...data,
+            typeId: type.id,
+            formId: form.id,
+            needId: need.id
+        }, {
+            where: { id },
+        });
+
+        if (updatedCount === 0) {
+            throw new Error('Product not found or no changes detected');
+        }
+
+        return this.productModel.findByPk(data.id);
+    }
+
+
     // need to modify more
     async searchProducts(filters: {
         name?: string;
@@ -266,7 +338,7 @@ export class ProductService {
         });
     }
 
-    async getSuggestedProducts(){
+    async getSuggestedProducts() {
         const products = await this.productModel.findAll({
             attributes: ['id', 'name', 'rate', 'createdAt'],
             include: [
@@ -276,15 +348,15 @@ export class ProductService {
                     attributes: ['url'],
                     order: [['createdAt', 'ASC']],
                     required: false,
-                },  {
+                }, {
                     model: SizeStock,
                     as: 'size_stock',
                     attributes: ['size', 'price', 'stock'],
                     required: false
-                }, 
+                },
             ],
-            order: [Sequelize.literal('RAND()')], 
-            limit: 3,                            
+            order: [Sequelize.literal('RAND()')],
+            limit: 3,
         });
 
         return products.map((product) => {
@@ -395,6 +467,4 @@ export class ProductService {
             order: [['name', 'ASC']]
         });
     }
-
-
 }
