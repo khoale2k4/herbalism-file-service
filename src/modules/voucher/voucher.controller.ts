@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Req, Res, HttpStatus, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req, Res, HttpStatus, Param, Delete } from '@nestjs/common';
 import { Response } from '../response/response.entity';
 import { VoucherService } from './voucher.service';
 import { CreateVoucherDto } from './dtos/create-voucher.dto';
@@ -24,6 +24,25 @@ export class VoucherController {
             }
 
             this.response.initResponse(true, 'Lấy vouchers thành công', voucher);
+            return res.status(HttpStatus.OK).json(this.response);
+        } catch (error) {
+            console.log(error);
+            this.response.initResponse(false, 'Đã xảy ra lỗi khi lấy thông tin voucher', null);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(this.response);
+        }
+    }
+
+    @Delete(':id')
+    async deleteVoucherById(@Param('id') id: string, @Req() req, @Res() res) {
+        try {
+            const voucher = await this.voucherService.delete(id);
+
+            if (!voucher) {
+                this.response.initResponse(false, 'Không tìm thấy voucher', null);
+                return res.status(HttpStatus.NOT_FOUND).json(this.response);
+            }
+
+            this.response.initResponse(true, 'Xoá voucher thành công', voucher);
             return res.status(HttpStatus.OK).json(this.response);
         } catch (error) {
             console.log(error);

@@ -24,4 +24,13 @@ export class VoucherService {
     async getAll() {
         return await this.voucherModel.findAll();
     }
+
+    async delete(id: string) {
+        const voucher = this.findById(id);
+
+        await this.voucherModel.destroy({
+            where: {id}
+        });
+        return voucher;
+    }
 }
