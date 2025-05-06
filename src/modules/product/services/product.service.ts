@@ -16,6 +16,7 @@ import { ProductTabs } from 'src/shared/database/models/product-tabs.model';
 import { ProductImages } from 'src/shared/database/models/product-image.dto';
 import { Customer } from 'src/shared/database/models/customer.model';
 import { Comment } from 'src/shared/database/models/comment.model';
+import { UpdateProductDto } from '../dtos/update-product.dto';
 
 @Injectable()
 export class ProductService {
@@ -220,7 +221,7 @@ export class ProductService {
         });
     }
 
-    async updateProducts(id: string, data: CreateProductDto) {
+    async updateProducts(id: string, data: UpdateProductDto) {
         await this.imageModel.destroy({
             where: {
                 productId: id
