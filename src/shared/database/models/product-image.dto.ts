@@ -13,8 +13,8 @@ export class ProductImages extends Model {
     declare id: UUID;
 
     @ForeignKey(() => Product)
-    @Column({ type: DataType.UUID, allowNull: false })
-    productId: UUID;
+    @Column({ type: DataType.STRING(255), allowNull: false })
+    productId: string;
 
     @BelongsTo(() => Product)
     product: Product;

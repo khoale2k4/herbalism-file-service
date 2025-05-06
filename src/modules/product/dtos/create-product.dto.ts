@@ -2,6 +2,9 @@ import { IsOptional } from "class-validator";
 
 export class CreateProductDto {
     @IsOptional()
+    id: string;
+
+    @IsOptional()
     name: string;
 
     @IsOptional()

@@ -47,6 +47,7 @@ export class ProductService {
         }
 
         const product = await this.productModel.create({
+            id: data.id,
             name: data.name,
             price: price,
             content: data.content,

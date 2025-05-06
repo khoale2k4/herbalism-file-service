@@ -20,8 +20,8 @@ export class Comment extends Model {
     rate: number;
 
     @ForeignKey(() => Product)
-    @Column({ type: DataType.UUID, allowNull: false })
-    productId: UUID;
+    @Column({ type: DataType.STRING(255), allowNull: false })
+    productId: string;
 
     @ForeignKey(() => Customer)
     @Column({ type: DataType.UUID, allowNull: true })

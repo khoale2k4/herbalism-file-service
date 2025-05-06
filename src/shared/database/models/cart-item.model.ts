@@ -24,8 +24,8 @@ export class CartItem extends Model {
     cartId: UUID;
 
     @ForeignKey(() => Product)
-    @Column({ type: DataType.UUID, allowNull: false })
-    productId: UUID;
+    @Column({ type: DataType.STRING(255), allowNull: false })
+    productId: string;
 
     @BelongsTo(() => Cart)
     cart: Cart;

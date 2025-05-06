@@ -15,10 +15,10 @@ import { ProductTabs } from './product-tabs.model';
 export class Product extends Model {
     @Default(UUIDV4)
     @Column({
-        type: DataType.UUID,
+        type: DataType.STRING(255),
         primaryKey: true,
     })
-    declare id: UUID;
+    declare id: string;
 
     @Column({ type: DataType.STRING(255), allowNull: false })
     name: string;
