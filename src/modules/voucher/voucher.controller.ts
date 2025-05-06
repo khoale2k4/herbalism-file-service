@@ -16,6 +16,10 @@ export class VoucherController {
     @UseGuards(JwtAuthGuard)
     async getVouchers(@Req() req, @Res() res) {
         try {
+            if (req.user.role === 'user') {
+                this.response.initResponse(false, 'Người dùng không có quyền truy cập tài nguyên này', null);
+                return res.status(HttpStatus.FORBIDDEN).json(this.response);
+            }
             const voucher = await this.voucherService.getAll();
             console.log(voucher);
             if (!voucher) {
@@ -33,8 +37,13 @@ export class VoucherController {
     }
 
     @Delete(':id')
+    @UseGuards(JwtAuthGuard)
     async deleteVoucherById(@Param('id') id: string, @Req() req, @Res() res) {
         try {
+            if (req.user.role === 'user') {
+                this.response.initResponse(false, 'Người dùng không có quyền truy cập tài nguyên này', null);
+                return res.status(HttpStatus.FORBIDDEN).json(this.response);
+            }
             const voucher = await this.voucherService.delete(id);
 
             if (!voucher) {

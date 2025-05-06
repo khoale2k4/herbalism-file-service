@@ -1,8 +1,8 @@
 import { Body, Controller, Get, HttpStatus, Param, Post, Req, Res, UseGuards } from "@nestjs/common";
 import { Response } from "../response/response.entity";
 import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
-import { CreateCommentDto } from "./dtos/create-comment.dto";
 import { MailService } from "./mail.service";
+import { SendMailsDto } from "./dtos/send-mails.dto";
 
 @Controller('mail')
 export class MailController {
@@ -33,6 +33,10 @@ export class MailController {
     @UseGuards(JwtAuthGuard)
     async getAll(@Body() body: { mail: string }, @Req() req, @Res() res) {
         try {
+            if (req.user.role === 'user') {
+                this.response.initResponse(false, 'Người dùng không có quyền truy cập tài nguyên này', null);
+                return res.status(HttpStatus.FORBIDDEN).json(this.response);
+            }
             const mails = await this.mailService.getMails();
             if (!mails) {
                 this.response.initResponse(false, "Lấy mail không thành công", mails);
@@ -65,4 +69,25 @@ export class MailController {
         }
     }
 
+    @Post('send')
+    @UseGuards(JwtAuthGuard)
+    async sendmail(@Body() body: SendMailsDto, @Req() req, @Res() res) {
+        try {
+            if (req.user.role === 'user') {
+                this.response.initResponse(false, 'Người dùng không có quyền truy cập tài nguyên này', null);
+                return res.status(HttpStatus.FORBIDDEN).json(this.response);
+            }
+            await this.mailService.sendMails(
+                body.mails,
+                body.subject,
+                body.html,
+            );
+            this.response.initResponse(false, "Gửi mails thành công", null);
+            return res.status(HttpStatus.OK).json(this.response);
+        } catch (error) {
+            console.error(error);
+            this.response.initResponse(false, "Đã xảy ra lỗi. Vui lòng thử lại", null);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(this.response);
+        }
+    }
 }

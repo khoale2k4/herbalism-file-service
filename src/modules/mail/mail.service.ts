@@ -1,9 +1,5 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
-import { Comment } from "src/shared/database/models/comment.model";
-import { CreateCommentDto } from "./dtos/create-comment.dto";
-import { Product } from "src/shared/database/models/product.model";
-import { where } from "sequelize";
 import { Mail } from "src/shared/database/models/mail.model";
 import * as nodemailer from 'nodemailer';
 import { ConfigService } from "@nestjs/config";
@@ -28,7 +24,7 @@ export class MailService {
 
     async sendMail(to: string, subject: string, html: string) {
         const info = await this.transporter.sendMail({
-            from: `"Your Company" <${process.env.MAIL_USER}>`,
+            from: `"Herbalism" <${process.env.MAIL_USER}>`,
             to,
             subject,
             html,
@@ -36,6 +32,17 @@ export class MailService {
 
         console.log('Message sent: %s', info.messageId);
         return info;
+    }
+
+    async sendMails(to: string[], subject: string, html: string): Promise<void> {
+        to.map(async (mail: string) => {
+            const info = await this.transporter.sendMail({
+                from: `"Herbalism" <${process.env.MAIL_USER}>`,
+                to: mail,
+                subject,
+                html,
+            });
+        })
     }
 
     async getMails() {
