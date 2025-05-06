@@ -14,9 +14,11 @@ import { ProductTabs } from 'src/shared/database/models/product-tabs.model';
 import { WellnessNeeds } from 'src/shared/database/models/wellness-needs.model';
 import { SizeStock } from 'src/shared/database/models/size_stock.model';
 import { ProductImages } from 'src/shared/database/models/product-image.dto';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
     imports: [
+        ConfigModule,
         SequelizeModule.forFeature([Product, ProductForms, ProductTypes, ProductTabs, WellnessNeeds, SizeStock, ProductImages]), 
         ResponseModule,
         forwardRef(() => AuthModule),
