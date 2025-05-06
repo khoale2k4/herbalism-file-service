@@ -11,7 +11,28 @@ export class VoucherController {
         private readonly response: Response
 
     ) { }
-    @Get(':id')
+
+    @Get('all')
+    @UseGuards(JwtAuthGuard)
+    async getVouchers(@Req() req, @Res() res) {
+        try {
+            const voucher = await this.voucherService.getAll();
+            console.log(voucher);
+            if (!voucher) {
+                this.response.initResponse(false, 'Không tìm thấy voucher', null);
+                return res.status(HttpStatus.NOT_FOUND).json(this.response);
+            }
+
+            this.response.initResponse(true, 'Lấy vouchers thành công', voucher);
+            return res.status(HttpStatus.OK).json(this.response);
+        } catch (error) {
+            console.log(error);
+            this.response.initResponse(false, 'Đã xảy ra lỗi khi lấy thông tin voucher', null);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(this.response);
+        }
+    }
+
+    @Get('get_by_id/:id')
     async getVoucherById(@Param('id') id: string, @Req() req, @Res() res) {
         try {
             const voucher = await this.voucherService.findById(id);
