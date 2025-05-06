@@ -20,6 +20,7 @@ import { Cart } from './models/cart.model';
 import { Invoice } from './models/invoice.model';
 import { Voucher } from './models/voucher.model';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Mail } from './models/mail.model';
 
 @Module({
     imports: [
@@ -40,7 +41,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
                     Customer, Product, Order, Comment, Admin, Article,
                     CartItem, OrderDetail, Address, SizeStock, ProductForms,
                     ProductTypes, WellnessNeeds, ProductTabs, ProductImages,
-                    ArticleCategory, Cart, Invoice, Voucher
+                    ArticleCategory, Cart, Invoice, Voucher, Mail
                 ],
             }),
         }),

@@ -18,6 +18,7 @@ import { CartModule } from './modules/cart/cart.module';
 import { CommentModule } from './modules/comment/comment.module';
 import { VoucherModule } from './modules/voucher/voucher.module';
 import { VnpayModule } from './modules/vnpay/vnpay.module';
+import { MailModule } from './modules/mail/mail.module';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { VnpayModule } from './modules/vnpay/vnpay.module';
     }),
     ConfigModule.forRoot({
       isGlobal: true,
-    }), CustomerModule, DatabaseModule, ResponseModule, AuthModule, ArticleModule, ProductModule, CartModule, OrderModule, CommentModule, VoucherModule, VnpayModule],
+    }), CustomerModule, DatabaseModule, ResponseModule, AuthModule, ArticleModule, ProductModule, CartModule, OrderModule, CommentModule, VoucherModule, VnpayModule, MailModule],
   controllers: [AppController],
   providers: [AppService],
 })
