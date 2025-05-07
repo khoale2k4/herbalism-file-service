@@ -222,46 +222,6 @@ export class ProductService {
     }
 
     async updateProducts(id: string, data: UpdateProductDto) {
-        await this.imageModel.destroy({
-            where: {
-                productId: id
-            }
-        })
-        await this.tabModel.destroy({
-            where: {
-                productId: id
-            }
-        })
-        await this.sizeStockModel.destroy({
-            where: {
-                productId: id
-            }
-        })
-
-        data.tabs.map(async (tab) => {
-            await this.tabModel.create({
-                productId: id,
-                name: tab.name,
-                description: tab.description
-            });
-        })
-
-        data.images.map(async (image) => {
-            await this.imageModel.create({
-                productId: id,
-                url: image
-            });
-        })
-
-        data.size_stock.map(async (sizeStock) => {
-            await this.sizeStockModel.create({
-                productId: id,
-                size: sizeStock.size,
-                stock: sizeStock.stock,
-                price: sizeStock.price
-            });
-        })
-
         let type = await this.findProductType(data.product_type);
         if (!type) {
             type = await this.createProductType(data.product_type);
@@ -284,6 +244,46 @@ export class ProductService {
         }, {
             where: { id },
         });
+
+        await this.imageModel.destroy({
+            where: {
+                productId: id
+            }
+        })
+        await this.tabModel.destroy({
+            where: {
+                productId: id
+            }
+        })
+        await this.sizeStockModel.destroy({
+            where: {
+                productId: id
+            }
+        })
+
+        data.tabs.map(async (tab) => {
+            await this.tabModel.create({
+                productId: data.id,
+                name: tab.name,
+                description: tab.description
+            });
+        })
+
+        data.images.map(async (image) => {
+            await this.imageModel.create({
+                productId: data.id,
+                url: image
+            });
+        })
+
+        data.size_stock.map(async (sizeStock) => {
+            await this.sizeStockModel.create({
+                productId: data.id,
+                size: sizeStock.size,
+                stock: sizeStock.stock,
+                price: sizeStock.price
+            });
+        })
 
         if (updatedCount === 0) {
             throw new Error('Product not found or no changes detected');
