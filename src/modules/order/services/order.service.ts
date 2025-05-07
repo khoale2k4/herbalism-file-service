@@ -36,6 +36,60 @@ export class OrderService {
     ) {
     }
 
+    async cancel(id: string) {
+        const order = await this.getById(id);
+
+        if (!order) {
+            throw Error("Order not found");
+        }
+
+        await this.orderModel.update({
+            ...order,
+            status: 'cancelled'
+        }, {
+            where: {
+                id
+            }
+        })
+        return order;
+    }
+
+    async complete(id: string) {
+        const order = await this.getById(id);
+
+        if (!order) {
+            throw Error("Order not found");
+        }
+
+        await this.orderModel.update({
+            ...order,
+            status: 'delivered'
+        }, {
+            where: {
+                id
+            }
+        })
+        return order;
+    }
+
+    async ship(id: string) {
+        const order = await this.getById(id);
+
+        if (!order) {
+            throw Error("Order not found");
+        }
+
+        await this.orderModel.update({
+            ...order,
+            status: 'shipped'
+        }, {
+            where: {
+                id
+            }
+        })
+        return order;
+    }
+
     async getMyOrders(userId: string) {
         return await this.orderModel.findAll({
             where: {
@@ -218,10 +272,10 @@ export class OrderService {
                 console.log(voucher.discount)
                 if (voucher.type === 'amount') {
                     finalPrice -= voucher.discount;
-                } else if(voucher.type === 'percent') {
+                } else if (voucher.type === 'percent') {
                     finalPrice -= (voucher.discount * finalPrice);
                 }
-                finalPrice = (finalPrice < 0? 0: finalPrice);
+                finalPrice = (finalPrice < 0 ? 0 : finalPrice);
             }
             console.log(finalPrice);
         }
@@ -291,5 +345,13 @@ export class OrderService {
         const trackingNumber = `ORDER_${orderNumber}_${formattedDate}`;
 
         return trackingNumber;
+    }
+
+    async getById(id: string) {
+        return await this.orderModel.findOne({
+            where: {
+                id
+            }
+        })
     }
 }
