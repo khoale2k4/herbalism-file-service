@@ -222,76 +222,74 @@ export class ProductService {
     }
 
     async updateProducts(id: string, data: UpdateProductDto) {
-        let type = await this.findProductType(data.product_type);
-        if (!type) {
-            type = await this.createProductType(data.product_type);
-        }
-        let form = await this.findProductForm(data.product_form);
-        if (!form) {
-            form = await this.createProductForm(data.product_form);
-        }
-
-        let need = await this.findWellnessNeed(data.wellness_need);
-        if (!need) {
-            need = await this.createWellnessNeed(data.wellness_need);
-        }
-
-        const [updatedCount] = await this.productModel.update({
-            ...data,
-            typeId: type.id,
-            formId: form.id,
-            needId: need.id
-        }, {
-            where: { id },
-        });
-
-        await this.imageModel.destroy({
-            where: {
-                productId: id
-            }
-        })
-        await this.tabModel.destroy({
-            where: {
-                productId: id
-            }
-        })
-        await this.sizeStockModel.destroy({
-            where: {
-                productId: id
-            }
-        })
-
-        data.tabs.map(async (tab) => {
-            await this.tabModel.create({
-                productId: data.id,
-                name: tab.name,
-                description: tab.description
+        let type = await this.findProductType(data.product_type) || await this.createProductType(data.product_type);
+        let form = await this.findProductForm(data.product_form) || await this.createProductForm(data.product_form);
+        let need = await this.findWellnessNeed(data.wellness_need) || await this.createWellnessNeed(data.wellness_need);
+    
+        const newId = data.id || id;
+        const isIdChanged = newId !== id;
+    
+        if (isIdChanged) {
+            const oldProduct = await this.productModel.findByPk(id);
+            if (!oldProduct) throw new Error('Old product not found');
+    
+            await this.productModel.create({
+                ...data,
+                id: newId,
+                typeId: type.id,
+                formId: form.id,
+                needId: need.id
             });
-        })
-
-        data.images.map(async (image) => {
-            await this.imageModel.create({
-                productId: data.id,
-                url: image
+    
+            await this.imageModel.destroy({ where: { productId: id } });
+            await this.tabModel.destroy({ where: { productId: id } });
+            await this.sizeStockModel.destroy({ where: { productId: id } });
+            await this.productModel.destroy({ where: { id } }); // Xóa sản phẩm cũ
+        } else {
+            const [updatedCount] = await this.productModel.update({
+                ...data,
+                typeId: type.id,
+                formId: form.id,
+                needId: need.id
+            }, {
+                where: { id }
             });
-        })
-
-        data.size_stock.map(async (sizeStock) => {
-            await this.sizeStockModel.create({
-                productId: data.id,
-                size: sizeStock.size,
-                stock: sizeStock.stock,
-                price: sizeStock.price
-            });
-        })
-
-        if (updatedCount === 0) {
-            throw new Error('Product not found or no changes detected');
+    
+            if (updatedCount === 0) throw new Error('Product not found or no changes detected');
+    
+            await this.imageModel.destroy({ where: { productId: id } });
+            await this.tabModel.destroy({ where: { productId: id } });
+            await this.sizeStockModel.destroy({ where: { productId: id } });
         }
-
-        return this.productModel.findByPk(data.id);
-    }
-
+    
+        const productId = newId;
+    
+        await Promise.all([
+            ...(data.tabs || []).map((tab) =>
+                this.tabModel.create({
+                    productId,
+                    name: tab.name,
+                    description: tab.description
+                })
+            ),
+            ...(data.images || []).map((url) =>
+                this.imageModel.create({
+                    productId,
+                    url
+                })
+            ),
+            ...(data.size_stock || []).map((item) =>
+                this.sizeStockModel.create({
+                    productId,
+                    size: item.size,
+                    stock: item.stock,
+                    price: item.price
+                })
+            )
+        ]);
+    
+        return this.productModel.findByPk(productId);
+    }    
 
     // need to modify more
     async searchProducts(filters: {
