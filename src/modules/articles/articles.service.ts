@@ -30,7 +30,10 @@ export class ArticleService {
 
     async update(articleData: CreateArticleDto, articleId: string) {
         const [updatedCount] = await this.articleModel.update(
-            articleData, {
+            {
+                ...articleData,
+                imageUrl: (articleData.images.length > 0 ? articleData.images[0] : "")
+            }, {
             where: {
                 id: articleId
             }
