@@ -6,7 +6,7 @@ import { UUID } from 'crypto';
 import { AdminService } from '../../admin/admin.service';
 import { CartItem } from 'src/shared/database/models/cart-item.model';
 import { Order } from 'src/shared/database/models/order.model';
-import { CreateOrderDto, OrderItemDto } from '../dtos/create-order.dto';
+import { CreateOrderForGuestDto, OrderItemDto } from '../dtos/create-order-for-guest.dto';
 import { Product } from 'src/shared/database/models/product.model';
 import { SizeStock } from 'src/shared/database/models/size_stock.model';
 import { Cart } from 'src/shared/database/models/cart.model';
@@ -26,6 +26,7 @@ export class OrderService {
         @InjectModel(Order) private readonly orderModel: typeof Order,
         @InjectModel(Product) private readonly productModel: typeof Product,
         @InjectModel(CartItem) private readonly cartItemModel: typeof CartItem,
+        @InjectModel(Address) private addressModel: typeof Address,
         @InjectModel(OrderDetail) private readonly orderDetailModel: typeof OrderDetail,
         @InjectModel(SizeStock) private readonly sizeStockModel: typeof SizeStock,
         @InjectConnection() private readonly sequelize: Sequelize,
@@ -137,18 +138,25 @@ export class OrderService {
     }
 
     // need to add trackingNumber
-    async createOrder(userId: string, dto: CreateOrderDto) {
+    async createOrderForGuest(dto: CreateOrderForGuestDto) {
         return await this.sequelize.transaction(async (t) => {
+            const address = await this.addressModel.create({
+                ...dto.address,
+                customerId: 'guest-id'
+            });
             const { itemPrices, products } = await this.validateItemsAndCalculateTotal(dto.items, t);
 
             const subtotal = itemPrices.reduce((total, price) => total + price, 0);
             const totalPrice = subtotal + this.feeService.calculateFee(subtotal);
 
+            const trackingNumber = await this.getTrackingNumber();
             const order = await this.orderModel.create({
-                customerId: userId,
-                address: dto.destination,
+                customerId: 'guest-id',
                 status: 'pending',
                 totalPrice: totalPrice,
+                addressId: address.id,
+                trackingNumber: trackingNumber,
+                paymentMethod: dto.paymentMethod
             }, { transaction: t });
 
             await Promise.all(dto.items.map(async (item) => {
@@ -156,7 +164,6 @@ export class OrderService {
                 if (!product) {
                     throw new Error(`Product ${item.productId} not found`);
                 }
-
                 await this.orderDetailModel.create({
                     orderId: order.id,
                     productId: product.id,
@@ -170,17 +177,6 @@ export class OrderService {
                     where: { productId: product.id, size: item.size },
                     transaction: t
                 });
-
-                if (dto.inCart) {
-                    await this.cartItemModel.destroy({
-                        where: {
-                            cartId: userId,
-                            productId: item.productId,
-                            size: item.size,
-                        },
-                        transaction: t
-                    });
-                }
             }));
 
             return order;
@@ -218,7 +214,7 @@ export class OrderService {
             }
 
             products.push(productPlain);
-            itemPrices.push(productPlain.price * item.quantity);
+            itemPrices.push( sizeStock.price * item.quantity);
         }
 
         return { itemPrices, products };

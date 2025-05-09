@@ -17,10 +17,11 @@ import { FeeService } from './services/fee.service';
 import { SizeStock } from 'src/shared/database/models/size_stock.model';
 import { VoucherService } from '../voucher/voucher.service';
 import { VoucherModule } from '../voucher/voucher.module';
+import { Address } from 'src/shared/database/models/address.model';
 
 @Module({
     imports: [
-        SequelizeModule.forFeature([Order, CartItem, Product, OrderDetail, SizeStock]), 
+        SequelizeModule.forFeature([Order, CartItem, Product, OrderDetail, SizeStock, Address]), 
         ResponseModule,
         AuthModule,
         ProductModule,

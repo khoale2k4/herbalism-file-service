@@ -2,8 +2,8 @@ import { Controller, Get, Post, Body, UseGuards, Req, Res, HttpStatus, Param } f
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Response } from '../response/response.entity';
 import { OrderService } from './services/order.service';
-import { CreateOrderDto } from './dtos/create-order.dto';
 import { FeeService } from './services/fee.service';
+import { CreateOrderForGuestDto } from './dtos/create-order-for-guest.dto';
 
 @Controller('order')
 export class OrderController {
@@ -118,10 +118,9 @@ export class OrderController {
     }
 
     @Post('create')
-    @UseGuards(JwtAuthGuard)
-    async createOrder(@Body() dto: CreateOrderDto, @Req() req, @Res() res) {
+    async createOrder(@Body() dto: CreateOrderForGuestDto, @Req() req, @Res() res) {
         try {
-            const order = await this.orderService.createOrder(req.user.id, dto);
+            const order = await this.orderService.createOrderForGuest(dto);
             if (!order) {
                 this.response.initResponse(false, "Tạo đơn hàng không thành công", order);
                 return res.status(HttpStatus.NOT_FOUND).json(this.response);
