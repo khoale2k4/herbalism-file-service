@@ -287,7 +287,7 @@ export class ProductService {
         let form = await this.findProductForm(data.product_form) || await this.createProductForm(data.product_form);
         let need = await this.findWellnessNeed(data.wellness_need) || await this.createWellnessNeed(data.wellness_need);
 
-        const [updatedCount] = await this.productModel.update({
+        await this.productModel.update({
             ...data,
             typeId: type.id,
             formId: form.id,
@@ -295,8 +295,6 @@ export class ProductService {
         }, {
             where: { id }
         });
-
-        if (updatedCount === 0) throw new Error('Product not found or no changes detected');
 
         await this.imageModel.destroy({ where: { productId: id } });
         await this.tabModel.destroy({ where: { productId: id } });
@@ -326,7 +324,7 @@ export class ProductService {
             )
         ]);
 
-        return this.productModel.findByPk(id);
+        return await this.productModel.findByPk(id);
     }
 
     // need to modify more
