@@ -338,6 +338,26 @@ export class ProductService {
         });
     }
 
+    async deleteById(id: string): Promise<boolean> {
+        try {
+            await Promise.all([
+                this.imageModel.destroy({ where: { productId: id } }),
+                this.tabModel.destroy({ where: { productId: id } }),
+                this.sizeStockModel.destroy({ where: { productId: id } }),
+            ]);
+    
+            const deletedCount = await this.productModel.destroy({ where: { id } });
+    
+            if (deletedCount === 0) {
+                throw new Error('Product not found or already deleted');
+            }
+    
+            return true;
+        } catch (error) {
+            console.error(`Lỗi khi xoá sản phẩm ${id}:`, error);
+            throw new Error('Failed to delete product');
+        }
+    }    
 
     // need to modify more
     async searchProducts(filters: {

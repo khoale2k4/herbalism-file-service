@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Req, Res, HttpStatus, Param, Query, UseInterceptors, UploadedFile, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req, Res, HttpStatus, Param, Query, UseInterceptors, UploadedFile, Put, Delete } from '@nestjs/common';
 import { ProductService } from '../services/product.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Response } from '../../response/response.entity';
@@ -202,8 +202,13 @@ export class ProductController {
     }
 
     @Put(':id')
+    @UseGuards(JwtAuthGuard)
     async update(@Param('id') id: string, @Body() dto: CreateProductDto, @Req() req, @Res() res) {
         try {
+            if (req.user.role === 'user') {
+                this.response.initResponse(false, 'Người dùng không có quyền truy cập tài nguyên này', null);
+                return res.status(HttpStatus.FORBIDDEN).json(this.response);
+            }
             const product = await this.productService.updateProducts(id, dto);
 
             if (!product) {
@@ -212,6 +217,30 @@ export class ProductController {
             }
 
             this.response.initResponse(true, 'Cập nhật sản phẩm thành công', product);
+            return res.status(HttpStatus.OK).json(this.response);
+        } catch (error) {
+            console.log(error);
+            this.response.initResponse(false, 'Đã xảy ra lỗi khi lấy thông tin sản phẩm', null);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(this.response);
+        }
+    }
+
+    @Delete(':id')
+    @UseGuards(JwtAuthGuard)
+    async delete(@Param('id') id: string, @Req() req, @Res() res) {
+        try {
+            if (req.user.role === 'user') {
+                this.response.initResponse(false, 'Người dùng không có quyền truy cập tài nguyên này', null);
+                return res.status(HttpStatus.FORBIDDEN).json(this.response);
+            }
+            const product = await this.productService.deleteById(id);
+
+            if (!product) {
+                this.response.initResponse(false, 'Xoá sản phẩm thất bại', null);
+                return res.status(HttpStatus.NOT_FOUND).json(this.response);
+            }
+
+            this.response.initResponse(true, 'Xoá sản phẩm thành công', product);
             return res.status(HttpStatus.OK).json(this.response);
         } catch (error) {
             console.log(error);
