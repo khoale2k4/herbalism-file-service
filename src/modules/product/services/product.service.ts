@@ -283,49 +283,61 @@ export class ProductService {
     }
 
     async updateProducts(id: string, data: UpdateProductDto) {
-        let type = await this.findProductType(data.product_type) || await this.createProductType(data.product_type);
-        let form = await this.findProductForm(data.product_form) || await this.createProductForm(data.product_form);
-        let need = await this.findWellnessNeed(data.wellness_need) || await this.createWellnessNeed(data.wellness_need);
+        const product = await this.productModel.findByPk(id);
+        if (!product) {
+            throw new Error('Product not found');
+        }
 
-        await this.productModel.update({
-            ...data,
-            typeId: type.id,
-            formId: form.id,
-            needId: need.id
-        }, {
-            where: { id }
-        });
-
-        await this.imageModel.destroy({ where: { productId: id } });
-        await this.tabModel.destroy({ where: { productId: id } });
-        await this.sizeStockModel.destroy({ where: { productId: id } });
-
-        await Promise.all([
-            ...(data.tabs || []).map((tab) =>
-                this.tabModel.create({
-                    productId: id,
-                    name: tab.name,
-                    description: tab.description
-                })
-            ),
-            ...(data.images || []).map((url) =>
-                this.imageModel.create({
-                    productId: id,
-                    url
-                })
-            ),
-            ...(data.size_stock || []).map((item) =>
-                this.sizeStockModel.create({
-                    productId: id,
-                    size: item.size,
-                    stock: item.stock,
-                    price: item.price
-                })
-            )
+        const [type, form, need] = await Promise.all([
+            this.findProductType(data.product_type) || this.createProductType(data.product_type),
+            this.findProductForm(data.product_form) || this.createProductForm(data.product_form),
+            this.findWellnessNeed(data.wellness_need) || this.createWellnessNeed(data.wellness_need),
         ]);
 
-        return await this.productModel.findByPk(id);
+        await this.productModel.update(
+            {
+                ...data,
+                typeId: type?.id,
+                formId: form?.id,
+                needId: need?.id,
+            },
+            { where: { id } }
+        );
+
+        await Promise.all([
+            this.imageModel.destroy({ where: { productId: id } }),
+            this.tabModel.destroy({ where: { productId: id } }),
+            this.sizeStockModel.destroy({ where: { productId: id } }),
+        ]);
+
+        const imageCreates = (data.images || []).map((url) =>
+            this.imageModel.create({ productId: id, url })
+        );
+
+        const tabCreates = (data.tabs || []).map((tab) =>
+            this.tabModel.create({
+                productId: id,
+                name: tab.name,
+                description: tab.description,
+            })
+        );
+
+        const stockCreates = (data.size_stock || []).map((item) =>
+            this.sizeStockModel.create({
+                productId: id,
+                size: item.size,
+                stock: item.stock,
+                price: item.price,
+            })
+        );
+
+        await Promise.all([...imageCreates, ...tabCreates, ...stockCreates]);
+
+        return await this.productModel.findByPk(id, {
+            include: [this.imageModel, this.tabModel, this.sizeStockModel],
+        });
     }
+
 
     // need to modify more
     async searchProducts(filters: {
