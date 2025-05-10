@@ -310,25 +310,25 @@ export class ProductService {
             this.sizeStockModel.destroy({ where: { productId: id } }),
         ]);
 
-        const imageCreates = (data.images || []).map((url) =>
-            this.imageModel.create({ productId: id, url })
-        );
-
-        const tabCreates = (data.tabs || []).map((tab) =>
-            this.tabModel.create({
+        const tabCreates = (data.tabs || []).map(async (tab) =>
+            await this.tabModel.create({
                 productId: id,
                 name: tab.name,
                 description: tab.description,
             })
         );
 
-        const stockCreates = (data.size_stock || []).map((item) =>
-            this.sizeStockModel.create({
+        const stockCreates = (data.size_stock || []).map(async (item) =>
+            await this.sizeStockModel.create({
                 productId: id,
                 size: item.size,
                 stock: item.stock,
                 price: item.price,
             })
+        );
+
+        const imageCreates = (data.images || []).map(async (url) =>
+            await this.imageModel.create({ productId: id, url })
         );
 
         await Promise.all([...imageCreates, ...tabCreates, ...stockCreates]);
