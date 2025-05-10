@@ -48,7 +48,7 @@ export class ProductService {
         }
 
         const product = await this.productModel.create({
-            id: data.id,
+            slug: data.slug,
             name: data.name,
             price: price,
             content: data.content,
@@ -88,6 +88,66 @@ export class ProductService {
         const product = await this.productModel.findByPk(
             id,
             {
+                attributes: ['id', 'name', 'price', 'rate', 'content', 'createdAt'],
+                include: [
+                    {
+                        model: ProductImages,
+                        as: 'images',
+                        attributes: ['url'],
+                        required: false
+                    },
+                    {
+                        model: ProductTypes,
+                        as: 'type',
+                        attributes: ['name'],
+                        required: false
+                    }, {
+                        model: ProductForms,
+                        as: 'form',
+                        attributes: ['name'],
+                        required: false
+                    }, {
+                        model: WellnessNeeds,
+                        as: 'need',
+                        attributes: ['name'],
+                        required: false
+                    },
+                    {
+                        model: ProductTabs,
+                        attributes: ['name', 'description'],
+                        as: 'tabs',
+                        required: false
+                    },
+                    {
+                        model: SizeStock,
+                        attributes: ['size', 'stock', 'price'],
+                        as: 'size_stock',
+                        required: false
+                    },
+                    {
+                        model: Comment,
+                        attributes: ['id', 'content', 'rate', 'createdAt'],
+                        as: 'comments',
+                        required: false,
+                        include: [
+                            {
+                                model: Customer,
+                                attributes: ['id', 'name'],
+                                as: 'customer',
+                                required: false,
+                            }
+                        ]
+                    }
+                ]
+            }
+        );
+        return product;
+    }
+
+    async findProductBySlug(slug: string) {
+        const product = await this.productModel.findOne(
+            {
+                where: { slug },
                 attributes: ['id', 'name', 'price', 'rate', 'content', 'createdAt'],
                 include: [
                     {
@@ -225,71 +285,48 @@ export class ProductService {
         let type = await this.findProductType(data.product_type) || await this.createProductType(data.product_type);
         let form = await this.findProductForm(data.product_form) || await this.createProductForm(data.product_form);
         let need = await this.findWellnessNeed(data.wellness_need) || await this.createWellnessNeed(data.wellness_need);
-    
-        const newId = data.id || id;
-        const isIdChanged = newId !== id;
-    
-        if (isIdChanged) {
-            const oldProduct = await this.productModel.findByPk(id);
-            if (!oldProduct) throw new Error('Old product not found');
-    
-            await this.productModel.create({
-                ...data,
-                id: newId,
-                typeId: type.id,
-                formId: form.id,
-                needId: need.id
-            });
-    
-            await this.imageModel.destroy({ where: { productId: id } });
-            await this.tabModel.destroy({ where: { productId: id } });
-            await this.sizeStockModel.destroy({ where: { productId: id } });
-            await this.productModel.destroy({ where: { id } }); // Xóa sản phẩm cũ
-        } else {
-            const [updatedCount] = await this.productModel.update({
-                ...data,
-                typeId: type.id,
-                formId: form.id,
-                needId: need.id
-            }, {
-                where: { id }
-            });
-    
-            if (updatedCount === 0) throw new Error('Product not found or no changes detected');
-    
-            await this.imageModel.destroy({ where: { productId: id } });
-            await this.tabModel.destroy({ where: { productId: id } });
-            await this.sizeStockModel.destroy({ where: { productId: id } });
-        }
-    
-        const productId = newId;
-    
+
+        const [updatedCount] = await this.productModel.update({
+            ...data,
+            typeId: type.id,
+            formId: form.id,
+            needId: need.id
+        }, {
+            where: { id }
+        });
+
+        if (updatedCount === 0) throw new Error('Product not found or no changes detected');
+
+        await this.imageModel.destroy({ where: { productId: id } });
+        await this.tabModel.destroy({ where: { productId: id } });
+        await this.sizeStockModel.destroy({ where: { productId: id } });
+
         await Promise.all([
             ...(data.tabs || []).map((tab) =>
                 this.tabModel.create({
-                    productId,
+                    productId: id,
                     name: tab.name,
                     description: tab.description
                 })
             ),
             ...(data.images || []).map((url) =>
                 this.imageModel.create({
-                    productId,
+                    productId: id,
                     url
                 })
             ),
             ...(data.size_stock || []).map((item) =>
                 this.sizeStockModel.create({
-                    productId,
+                    productId: id,
                     size: item.size,
                     stock: item.stock,
                     price: item.price
                 })
             )
         ]);
-    
-        return this.productModel.findByPk(productId);
-    }    
+
+        return this.productModel.findByPk(id);
+    }
 
     // need to modify more
     async searchProducts(filters: {

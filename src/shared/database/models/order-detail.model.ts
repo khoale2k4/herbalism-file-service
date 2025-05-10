@@ -17,7 +17,7 @@ export class OrderDetail extends Model {
 
     @ForeignKey(() => Product)
     @Column({ type: DataType.STRING(255), allowNull: false })
-    productId: string;
+    productId: UUID;
 
     @Column({ type: DataType.STRING(20), allowNull: false })
     size: string;

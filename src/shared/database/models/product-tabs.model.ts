@@ -14,7 +14,7 @@ export class ProductTabs extends Model {
     
     @ForeignKey(() => Product)
     @Column({ type: DataType.STRING(255), allowNull: false })
-    productId: string;
+    productId: UUID;
 
     @Column({ type: DataType.STRING(255), allowNull: false })
     name: string;

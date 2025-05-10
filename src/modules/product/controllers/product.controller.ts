@@ -163,6 +163,25 @@ export class ProductController {
         }
     }
 
+    @Get('slug/:slug')
+    async getProductBySlug(@Param('slug') slug: string, @Req() req, @Res() res) {
+        try {
+            const product = await this.productService.findProductBySlug(slug);
+
+            if (!product) {
+                this.response.initResponse(false, 'Không tìm thấy sản phẩm', null);
+                return res.status(HttpStatus.NOT_FOUND).json(this.response);
+            }
+
+            this.response.initResponse(true, 'Lấy thông tin sản phẩm thành công', product);
+            return res.status(HttpStatus.OK).json(this.response);
+        } catch (error) {
+            console.log(error);
+            this.response.initResponse(false, 'Đã xảy ra lỗi khi lấy thông tin sản phẩm', null);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(this.response);
+        }
+    }
+
     @Get(':id')
     async getProductById(@Param('id') id: string, @Req() req, @Res() res) {
         try {

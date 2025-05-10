@@ -2,7 +2,7 @@ import { IsOptional } from "class-validator";
 
 export class UpdateProductDto {
     @IsOptional()
-    id: string;
+    slug: string;
 
     @IsOptional()
     name: string;

@@ -21,7 +21,7 @@ export class Comment extends Model {
 
     @ForeignKey(() => Product)
     @Column({ type: DataType.STRING(255), allowNull: false })
-    productId: string;
+    productId: UUID;
 
     @ForeignKey(() => Customer)
     @Column({ type: DataType.UUID, allowNull: true })

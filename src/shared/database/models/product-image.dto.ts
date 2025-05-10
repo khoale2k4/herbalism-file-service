@@ -14,7 +14,7 @@ export class ProductImages extends Model {
 
     @ForeignKey(() => Product)
     @Column({ type: DataType.STRING(255), allowNull: false })
-    productId: string;
+    productId: UUID;
 
     @BelongsTo(() => Product)
     product: Product;
