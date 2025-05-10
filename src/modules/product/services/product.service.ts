@@ -88,7 +88,7 @@ export class ProductService {
         const product = await this.productModel.findByPk(
             id,
             {
-                attributes: ['id', 'name', 'price', 'rate', 'content', 'createdAt'],
+                attributes: ['id', 'name', 'slug', 'price', 'rate', 'content', 'createdAt'],
                 include: [
                     {
                         model: ProductImages,
@@ -148,7 +148,7 @@ export class ProductService {
         const product = await this.productModel.findOne(
             {
                 where: { slug },
-                attributes: ['id', 'name', 'price', 'rate', 'content', 'createdAt'],
+                attributes: ['id', 'name', 'slug', 'price', 'rate', 'content', 'createdAt'],
                 include: [
                     {
                         model: ProductImages,
@@ -225,7 +225,7 @@ export class ProductService {
 
     async findAllProducts() {
         const products = await Product.findAll({
-            attributes: ['id', 'name', 'rate', 'createdAt'],
+            attributes: ['id', 'name', 'slug', 'rate', 'createdAt'],
             include: [
                 {
                     model: ProductTypes,
@@ -271,6 +271,7 @@ export class ProductService {
                 rate: plainProduct.rate,
                 type: plainProduct.type,
                 form: plainProduct.form,
+                slug: plainProduct.slug,
                 need: plainProduct.need,
                 size_stock: plainProduct.size_stock,
                 totalStock: totalStock,
