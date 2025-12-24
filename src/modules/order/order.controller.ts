@@ -75,7 +75,7 @@ export class OrderController {
     @UseGuards(JwtAuthGuard)
     async confirmDeliver(@Param('id') id: string, @Req() req, @Res() res) {
         try {
-            if (req.user.role === 'admin') {
+            if (req.user.role !== 'admin') {
                 this.response.initResponse(false, 'Người dùng không có quyền truy cập tài nguyên này', null);
                 return res.status(HttpStatus.FORBIDDEN).json(this.response);
             }
